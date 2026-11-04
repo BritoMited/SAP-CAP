@@ -13,6 +13,16 @@
     "start": "cds-serve",
     "watch-serviceticketlist": "cds watch --open service.ticket.serviceticketlist/index.html?sap-ui-xx-viewCache=false --livereload false"
   },
+  "cds": {
+    "requires": {
+      "db": {
+        "kind": "sqlite",
+        "credentials": {
+          "url": "db.sqlite"
+        }
+      }
+    }
+  },
   "private": true,
   "workspaces": [
     "app/*"
