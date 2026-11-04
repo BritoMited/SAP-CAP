@@ -1,0 +1,136 @@
+### 1. Executar função OData com parâmetro
+GET http://localhost:4004/odata/v4/odataService/customFunction(name='Satya')
+
+### execute function
+GET http://localhost:4004/odata/v4/odataService/customFunction(name='Satya')
+
+###service document
+GET http://localhost:4004/odata/v4/crud
+
+###METADATA document
+GET http://localhost:4004/odata/v4/crud/$metadata
+
+### read operation on technician table/entity
+GET http://localhost:4004/odata/v4/crud/Technician
+
+###select only few fields from technician table/entity
+GET http://localhost:4004/odata/v4/crud/Technician?$select=ID,nameFirst,nameLast
+
+###get the count of technician entries in the database
+GET http://localhost:4004/odata/v4/crud/Technician/$count
+
+###fetch only first 2 entries from technician table/entity
+GET http://localhost:4004/odata/v4/crud/Technician?$top=2&$skip=0
+
+###fetch only next 2 entries from technician table/entity
+GET http://localhost:4004/odata/v4/crud/Technician?$top=2&$skip=2
+
+###fetch technician entry whose ID is 14774279-1f09-4567-a812-1ef983b991a6  
+GET http://localhost:4004/odata/v4/crud/Technician(14774279-1f09-4567-a812-1ef983b991a6)
+
+
+###fetch technician entry whose ID is 14774279-1f09-4567-a812-1ef983b991a6  
+GET http://localhost:4004/odata/v4/crud/Technician/14774279-1f09-4567-a812-1ef983b991a6
+
+### filter operator examples
+###fetch technician entry whose gender is 'F'
+GET http://localhost:4004/odata/v4/crud/Technician?$filter=gender eq 'F'
+
+###fetch first 2 female records from technician table/entity
+GET http://localhost:4004/odata/v4/crud/Technician?$filter=gender eq 'F'&$top=2
+
+###fetch technician where nameFirst contains 1477433
+GET http://localhost:4004/odata/v4/crud/Technician?$filter=contains(nameFirst,'1477433')
+
+###fetch technician where nameFirst starts with nameFirst
+GET http://localhost:4004/odata/v4/crud/Technician?$filter=startswith(nameFirst,'nameFirst')
+
+###fetch the technicians where Salaryamount is more- descending order
+GET http://localhost:4004/odata/v4/crud/Technician?$orderby=Salaryamount desc
+
+###fetch the technicians where Salaryamount is more- descending order-pagination
+GET http://localhost:4004/odata/v4/crud/Technician?$orderby=Salaryamount desc&$top=2
+
+###fetch parent data
+GET http://localhost:4004/odata/v4/crud/serviceTicket
+
+###fetch single service ticket with id 29814354-7a6c-447b-85d6-e4dc6ea8a818
+GET http://localhost:4004/odata/v4/crud/serviceTicket(29814354-7a6c-447b-85d6-e4dc6ea8a818)
+
+###fetch child data of service ticket with id 29814354-7a6c-447b-85d6-e4dc6ea8a818
+GET http://localhost:4004/odata/v4/crud/serviceTicket(29814354-7a6c-447b-85d6-e4dc6ea8a818)/Items
+
+###fetch child data of service ticket with id 29814354-7a6c-447b-85d6-e4dc6ea8a818 and  parent data as well
+GET http://localhost:4004/odata/v4/crud/serviceTicket(29814354-7a6c-447b-85d6-e4dc6ea8a818)?$expand=Items
+
+
+
+###implement read on parent view spre part view
+GET http://localhost:4004/odata/v4/ViewsOdata/SparePartView
+
+
+###get child view data ticket item view
+GET http://localhost:4004/odata/v4/ViewsOdata/TicketItemView
+
+###fetch parent and child data for a particular parent
+GET http://localhost:4004/odata/v4/ViewsOdata/SparePartView(PartNumber='part_number-15484227')?$expand=TicketItems
+
+
+###get filtered child data
+GET http://localhost:4004/odata/v4/ViewsOdata/SparePartView(PartNumber='part_number-14887007')?$expand=TicketItems($filter=TicketNumber eq 'ticket_number-29814345')
+
+
+
+###create technician entry
+POST http://localhost:4004/odata/v4/crud/Technician
+Content-Type: application/json
+
+{     
+      "nameFirst": "nameFirst-1477491",
+      "nameLast": "nameLast-1477491",
+      "email_adress": "email-1477491",
+      "phone": "phone-1477491",
+      "gender": "M",
+      "language": "77424",
+      "country_code": "212",
+      "currency_code": "629",
+      "salaryAmount": 3551063061901.03,
+      "accountNumber": "ntNumber-1477491",
+      "bankId": "bankId-1477491",
+      "bankName": "bankName-1477491"
+}
+
+###count
+GET http://localhost:4004/odata/v4/crud/Technician/$count
+
+###PATCH technician 1477424e-c2b3-48c1-adcc-7de32ab6037d
+PATCH http://localhost:4004/odata/v4/crud/Technician(1477424e-c2b3-48c1-adcc-7de32ab6037d)
+Content-Type: application/json
+
+{
+    "phone": "phone-1477489"
+}
+
+###get full name technician 1477424e-c2b3-48c1-adcc-7de32ab6037d
+GET http://localhost:4004/odata/v4/crud/Technician(31165409-1b42-48ab-afc6-8c9b5828f5ee)/getFullNameTechnician
+
+###update phone number
+
+POST http://localhost:4004/odata/v4/crud/Technician(31165409-1b42-48ab-afc6-8c9b5828f5ee)/updatePhoneNumber
+Content-Type: application/json
+
+{
+    "newPhone": "NOVOphone-1477489"
+}
+
+###get full name technician 1477424e-c2b3-48c1-adcc-7de32ab6037d
+GET http://localhost:4004/odata/v4/crud/Technician(31165409-1b42-48ab-afc6-8c9b5828f5ee)
+
+###get all technician 1477424e-c2b3-48c1-adcc-7de32ab6037d
+GET http://localhost:4004/odata/v4/crud/getFullNamesTechnicians
+
+###get all technician 1477424e-c2b3-48c1-adcc-7de32ab6037d
+GET http://localhost:4004/odata/v4/crud/getHighestPaidTechnician
+
+###get all technician 1477424e-c2b3-48c1-adcc-7de32ab6037d
+POST http://localhost:4004/odata/v4/crud/resetAllTechnicianPhones

@@ -1,0 +1,11 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "aulas.cap",
+            "database": "${workspaceFolder:CAPM}/db.sqlite"
+        }
+    ],
+    "sqltools.useNodeRuntime": true
+}
