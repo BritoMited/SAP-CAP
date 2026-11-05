@@ -18,6 +18,12 @@ annotate service.ServiceTicket with @(
         Value : ticket_number
     },
     {
+        $Type : 'UI.DataFieldForAction',
+        Action : 'crudService.updatePhoneNumber',
+        Label : 'Update Phone Number',
+        Inline : true
+    },
+    {
         $Type : 'UI.DataField',
         Value : customer_guid.customer_id
     },

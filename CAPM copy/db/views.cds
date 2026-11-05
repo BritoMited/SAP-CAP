@@ -24,27 +24,27 @@ context views {
 
     define view ![SparePart] as
         select from data.SparePart {
-                @EnduserText.label: [
-                    {
-                        language: 'en',
-                        text    : 'Part Number'
-                    },
-                    {
-                        language: 'de',
-                        text    : 'Teilnummer'
-                    }
-                ]
+                // @EnduserText.label: [
+                //     {
+                //         language: 'en',
+                //         text    : 'Part Number'
+                //     },
+                //     {
+                //         language: 'de',
+                //         text    : 'Teilnummer'
+                //     }
+                // ]
             key part_number,
-                @EnduserText.label: [
-                    {
-                        language: 'en',
-                        text    : 'Description'
-                    },
-                    {
-                        language: 'de',
-                        text    : 'Beschreibung'
-                    }
-                ]
+                // @EnduserText.label: [
+                //     {
+                //         language: 'en',
+                //         text    : 'Description'
+                //     },
+                //     {
+                //         language: 'de',
+                //         text    : 'Beschreibung'
+                //     }
+                // ]
                 description
         };
 

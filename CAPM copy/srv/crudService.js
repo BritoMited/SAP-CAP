@@ -121,6 +121,24 @@ export class crudService extends cds.ApplicationService { init() {
     await UPDATE(Technician).set({phone:1234435345});
     return 'All technician phone numbers have been reset';
   });
+
+this.on('updatePhoneNumberT', serviceTicket, async (req) => {
+    const { ID } = req.params[0];
+    const ticket = await SELECT.one.from(serviceTicket)
+    .columns(
+        ticket=>{
+            ticket.customer_guid.NODE_KEY.as('customerNodeKey');
+        }
+    )
+    .where({ ID });
+
+    // outra forma de fazer update caso precise resgatar a informação do id no meio do codigo (apesar de a entidade ja ter sido instanciada no começo)
+
+    const dbCustomer = cds.entities['com.training.capm.coreBusiness.Customer'];
+
+    const updateRows = await UPDATE(dbCustomer).set({ phone: '12345'}).where({ NODE_KEY: ticket.customerNodeKey });
+
+});
   
   return super.init()
 }}

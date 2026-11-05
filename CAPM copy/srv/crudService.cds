@@ -19,6 +19,9 @@ service crudService {
         when '34' then 1
         else 'Unknown'
         end as CriticalityField:Integer
+    }
+    actions{
+        action updatePhoneNumber() returns String;
     };
     entity ServiceTicketItem as projection on operations.ServiceTicketItem;
 
