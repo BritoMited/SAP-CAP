@@ -1,0 +1,354 @@
+
+
+--- INICIO DO FICHEIRO: srv/crudService.js ---
+
+import cds from '@sap/cds'
+
+export class crudService extends cds.ApplicationService { init() {
+
+  const { Technician, serviceTicket, Customer, ServiceSite, SparePart, serviceTicketItem } = cds.entities('crudService')
+
+  this.before (['CREATE', 'UPDATE'], Technician, async (req) => {
+
+    if (!req.data.country_code) {
+      req.error(400, 'Country is required');
+    }
+
+    if (req.data.country_code !== 'USA') {
+      req.error(400, 'Only technicians from USA can be created or updated'); // teste de regra do handler
+    }
+
+    console.log('Before CREATE/UPDATE Technician', req.data)
+
+  })
+
+  this.after ('READ', Technician, async (technician, req) => {
+    console.log('After READ Technician', technician)
+
+    const rows = Array.isArray(technician)
+      ? technician
+      : [technician]
+
+    for (const tech of rows) {
+      tech.fullName = `${tech.nameFirst || ''} ${tech.nameLast || ''}`.trim()
+    }
+
+    for (const tech of rows) {
+      tech.fullName1 = `${tech.nameFirst || ''} ${tech.nameLast || ''}`.trim()
+    }
+
+  })
+
+  this.before (['CREATE', 'UPDATE'], serviceTicket, async (req) => {
+    console.log('Before CREATE/UPDATE serviceTicket', req.data)
+  })
+  this.after ('READ', serviceTicket, async (serviceTicket, req) => {
+    console.log('After READ serviceTicket', serviceTicket)
+  })
+  this.before (['CREATE', 'UPDATE'], Customer, async (req) => {
+    console.log('Before CREATE/UPDATE Customer', req.data)
+  })
+  this.after ('READ', Customer, async (customer, req) => {
+    console.log('After READ Customer', customer)
+  })
+  this.before (['CREATE', 'UPDATE'], ServiceSite, async (req) => {
+    console.log('Before CREATE/UPDATE ServiceSite', req.data)
+  })
+  this.after ('READ', ServiceSite, async (serviceSite, req) => {
+    console.log('After READ ServiceSite', serviceSite)
+  })
+  this.before (['CREATE', 'UPDATE'], SparePart, async (req) => {
+    console.log('Before CREATE/UPDATE SparePart', req.data)
+  })
+  this.after ('READ', SparePart, async (sparePart, req) => {
+    console.log('After READ SparePart', sparePart)
+  })
+  this.before (['CREATE', 'UPDATE'], serviceTicketItem, async (req) => {
+    console.log('Before CREATE/UPDATE serviceTicketItem', req.data)
+  })
+  this.after ('READ', serviceTicketItem, async (serviceTicketItem, req) => {
+    console.log('After READ serviceTicketItem', serviceTicketItem)
+  })
+
+  this.on('getFullNameTechnician', Technician, async (req)=>{
+    const {ID} = req.params[0];
+
+    const technician = await
+    SELECT.one.from(Technician).
+    columns('nameFirst','nameLast').
+    where({ID:ID});
+
+    if(!technician) {
+      req.error(500, 'Technician not found');
+    }
+
+    const stringv = `${technician.nameFirst} ${technician.nameLast}`;
+
+    return stringv;
+
+  });
+
+  this.on('updatePhoneNumber', Technician, async (req)=>{
+    const {ID} = req.params[0];
+
+    await UPDATE(Technician).
+    set({phone:req.data.newPhone}).
+    where({ID:ID})
+
+    return 'Phone Updated Successfully'
+
+  })
+
+  this.on('getFullNamesTechnicians', async (req)=>{
+
+  const technicians = await SELECT.from(Technician).columns('nameFirst','nameLast');
+
+  return technicians.map(tech => `${tech.nameFirst} ${tech.nameLast}`);
+
+  });
+
+  this.on('getHighestPaidTechnician', async (req) => {
+    const highestPaidTechnician = await SELECT.one
+    .from(Technician)
+    .columns('nameFirst', 'nameLast', 'salaryAmount')
+    .orderBy('salaryAmount desc')
+    .limit(1);
+
+    if (!highestPaidTechnician) {
+    req.error(404, 'No technicians found');
+    }
+
+    return highestPaidTechnician;
+  });
+
+  this.on('resetAllTechnicianPhones', async (req)=>{
+    await UPDATE(Technician).set({phone:1234435345});
+    return 'All technician phone numbers have been reset';
+  });
+
+this.on('updatePhoneNumberT', async (req) => {
+    const { ID } = req.params[0] || {};
+    if (!ID) {
+        return req.error(400, "ID do ticket não fornecido na requisição.");
+    }
+
+    // Utilize a entidade desestruturada corretamente no topo do seu ficheiro
+    const ticket = await SELECT.one.from(req.target)
+        .columns(
+            t => {
+                t.customer_guid(c => {
+                    c.NODE_KEY.as('customerNodeKey');
+                });
+            }
+        )
+        .where({ ID });
+
+    if (!ticket) {
+        return req.error(404, "Ticket não encontrado");
+    }
+
+    const dbCustomer = cds.entities['aulas.cap.coreBusiness.Customer'];
+
+    const updateRows = await UPDATE(dbCustomer, ticket.customerNodeKey)
+        .with({ phone_number: '12345' });
+
+    return updateRows;
+});
+  
+  return super.init()
+}}
+
+
+--- FIM DO FICHEIRO: srv/crudService.js ---
+
+
+
+--- INICIO DO FICHEIRO: db/schema.cds ---
+
+namespace aulas.cap;
+
+using {aulas.cap1 as common} from './commons';
+using {
+    cuid,
+    Country,
+    Currency
+} from '@sap/cds/common';
+
+context coreBusiness {
+
+    entity Customer {
+        key NODE_KEY                 : common.Guid;
+            customer_type            : String(32);
+            email_adress             : String(32);
+            phone_number             : String(32);
+            alternative_phone_number : String(32);
+            website_url              : String(32);
+            customer_name            : String(32);
+            customer_id              : String(32);
+            SITE_GUID                : Association to one ServiceSite;
+            SpareParts               : Association to many SparePart
+                                           on SpareParts.customer_guid = $self;
+    }
+
+    entity ServiceSite {
+        key NODE_KEY    : common.Guid;
+            city        : String(255);
+            postal_code : String(20);
+            street      : String(255);
+            building    : String(255);
+            country     : String(255);
+            site_type   : String(44);
+            active_from : Date;
+            active_to   : Date;
+            latitude    : Decimal(9, 6);
+            longitude   : Decimal(9, 6);
+            customer    : Association to one Customer
+                              on customer.SITE_GUID = $self
+    }
+
+    entity Technician : cuid {
+        nameFirst     : String(255);
+        nameLast      : String(255);
+        email_adress  : String(255);
+        phone         : String(20);
+        gender        : String(1) enum {
+            Male = 'M';
+            Female = 'F';
+            Other = 'O';
+        };
+        language      : String(5);
+        country       : Country;
+        currency      : Currency;
+        salaryAmount  : Decimal(15, 2) @(Semantic.amount.currencyCode: 'currency_code');
+        accountNumber : String(16);
+        bankId        : String(40);
+        bankName      : String(255);
+        Tickets       : Association to many operations.ServiceTicket
+                            on Tickets.technician = $self;
+        virtual fullname1 : String(255) // não cria campo no banco, é utilizado apenas para o front criando metadata
+    }
+
+    entity SparePart {
+        key NODE_KEY       : common.Guid;
+            part_number    : String(255)    @assert.unique;
+            description    : localized String(255);
+            price          : Decimal(15, 2) @(Semantic.amount.currencyCode: 'currency_code');
+            category       : String(255);
+            customer_guid  : Association to one Customer;
+            tax_class_code : Integer;
+            measure_unit   : String(3);
+            weight_measure : Decimal(15, 3);
+            weight_unit    : String(3);
+            currency_code  : String(4);
+            width          : Decimal(15, 3);
+            height         : Decimal(15, 3);
+            depth          : Decimal(15, 3);
+            dim_unit       : String(3);
+
+    }
+
+    entity PriorityCode {
+        key code        : String(2);
+            description : String(255);
+    }
+
+}
+
+context operations {
+
+    entity ServiceTicket : common.Amount, cuid {
+        ticket_number   : String(255);
+        customer_guid   : Association to one coreBusiness.Customer;
+        priority_status : Association to one coreBusiness.PriorityCode;
+        technician      : Association to one coreBusiness.Technician;
+        overall_status  : String(255);
+        note            : String(1000);
+        reported_date   : Date;
+        reported_time   : Time;
+        closed_date     : Date;
+        closed_time     : Time;
+        Items           : Composition of many ServiceTicketItem
+                              on Items.parent = $self;
+    }
+
+    entity ServiceTicketItem : common.Amount, cuid {
+        parent      : Association to one ServiceTicket;
+        item_number     : String(255);
+        description     : String(255);
+        spare_part_guid : Association to one coreBusiness.SparePart;
+    }
+
+
+}
+
+
+--- FIM DO FICHEIRO: db/schema.cds ---
+
+
+
+--- INICIO DO FICHEIRO: srv\crudService.cds ---
+
+using {aulas.cap.coreBusiness as data} from '../db/schema';
+using {aulas.cap.operations as operations} from '../db/schema';
+
+service crudService {
+
+    entity Technician     as projection on data.Technician
+    actions{
+        function getFullNameTechnician() returns String;
+        action updatePhoneNumber(newPhone : String) returns String;
+    };
+
+    entity ServiceTicket     as projection on operations.ServiceTicket{
+        *,
+        case priority_status.code
+        when '34' then 'High'
+        else 'Unknown'
+        end as priorityStatus:String(10),
+        case priority_status.code
+        when '34' then 1
+        else 'Unknown'
+        end as CriticalityField:Integer
+    }
+    actions{
+        action updatePhoneNumberT() returns String;
+    };
+    entity ServiceTicketItem as projection on operations.ServiceTicketItem;
+
+    entity Customer     as projection on data.Customer;
+    entity ServiceSite  as projection on data.ServiceSite;
+    entity SparePart    as projection on data.SparePart;
+
+    function getFullNamesTechnicians() returns array of String;
+    function getHighestPaidTechnician() returns Technician;
+    action resetAllTechnicianPhones() returns String;
+
+}
+
+--- FIM DO FICHEIRO: srv\crudService.cds ---
+
+
+
+--- INICIO DO FICHEIRO: srv\odataService.cds ---
+
+service odataService @(path: 'odataService'){
+
+function customFunction(name: String) returns String;
+
+}
+
+--- FIM DO FICHEIRO: srv\odataService.cds ---
+
+
+
+--- INICIO DO FICHEIRO: srv\ViewsOdata.cds ---
+
+using {aulas.cap.views as views} from '../db/views';
+
+service ViewsOdata @(path: 'ViewsOdata') {
+    entity SparePartView as projection on views.views.SparePartView;
+    entity TicketItemView as projection on views.views.TicketItemView;
+}
+
+--- FIM DO FICHEIRO: srv\ViewsOdata.cds ---
+

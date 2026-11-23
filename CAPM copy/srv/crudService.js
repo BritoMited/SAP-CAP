@@ -122,22 +122,33 @@ export class crudService extends cds.ApplicationService { init() {
     return 'All technician phone numbers have been reset';
   });
 
-this.on('updatePhoneNumberT', serviceTicket, async (req) => {
-    const { ID } = req.params[0];
-    const ticket = await SELECT.one.from(serviceTicket)
-    .columns(
-        ticket=>{
-            ticket.customer_guid.NODE_KEY.as('customerNodeKey');
-        }
-    )
-    .where({ ID });
+this.on('updatePhoneNumberT', async (req) => {
+    const { ID } = req.params[0] || {};
+    if (!ID) {
+        return req.error(400, "ID do ticket não fornecido na requisição.");
+    }
 
-    // outra forma de fazer update caso precise resgatar a informação do id no meio do codigo (apesar de a entidade ja ter sido instanciada no começo)
+    // Seleciona diretamente a chave estrangeira da entidade ServiceTicket
+    const ticket = await SELECT.one.from(req.target)
+        .columns('customer_guid_NODE_KEY')
+        .where({ ID });
 
-    const dbCustomer = cds.entities['com.training.capm.coreBusiness.Customer'];
+    console.log('Ticket encontrado:', ticket);
 
-    const updateRows = await UPDATE(dbCustomer).set({ phone: '12345'}).where({ NODE_KEY: ticket.customerNodeKey });
+    if (!ticket || !ticket.customer_guid_NODE_KEY) {
+        return req.error(404, "Ticket ou Customer Key não encontrado");
+    }
 
+    const dbCustomer = cds.entities['aulas.cap.coreBusiness.Customer'];
+
+    // Executa o update utilizando a mesma estrutura que usaste no Technician
+    const updateRows = await UPDATE(dbCustomer)
+        .set({ phone_number: '12345' })
+        .where({ NODE_KEY: ticket.customer_guid_NODE_KEY });
+
+    console.log('Linhas afetadas:', updateRows);
+
+    return 'Phone Number Updated Successfully';
 });
   
   return super.init()

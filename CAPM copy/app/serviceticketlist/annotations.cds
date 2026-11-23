@@ -18,8 +18,12 @@ annotate service.ServiceTicket with @(
         Value : ticket_number
     },
     {
+        $Type : 'UI.DataField',
+        Value : customer_guid.phone_number
+    },
+    {
         $Type : 'UI.DataFieldForAction',
-        Action : 'crudService.updatePhoneNumber',
+        Action : 'crudService.updatePhoneNumberT',
         Label : 'Update Phone Number',
         Inline : true
     },
@@ -48,11 +52,184 @@ annotate service.ServiceTicket with @(
         Value : priority_status_code,
         Criticality : CriticalityField
     }
-]
+],
+
+UI.HeaderInfo : {
+    TypeName : 'Service Ticket',
+    TypeNamePlural : 'Service Tickets',
+    //ImageUrl : ProductPictureURL,
+    Title : {
+        $Type : 'UI.DataField',
+        Value : ticket_number
+    },
+    Description : {
+        $Type : 'UI.DataField',
+        Value : reported_date
+    }
+},
+    UI.Facets         : [{
+        $Type : 'UI.CollectionFacet',
+        Label : 'General Information',
+        Facets: [
+            {
+            $Type : 'UI.ReferenceFacet',
+            Target: '@UI.Identification',
+            Label : 'Gen information'
+
+        },
+        {
+            $Type : 'UI.ReferenceFacet',
+            Target: '@UI.FieldGroup#PricingDetails',
+            Label : 'Pricing Details'
+
+        },
+         {
+            $Type : 'UI.ReferenceFacet',
+            Target: '@UI.FieldGroup#StatusData',
+            Label : 'Status Details'
+
+        },
+
+        ]
+    },
+    {
+        $Type : 'UI.ReferenceFacet',
+        Target : 'Items/@UI.LineItem',
+        Label : 'Ticket Items'
+    }],
+    UI.Identification : [
+        {
+            $Type: 'UI.DataField',
+            Value: ticket_number,
+            Label: 'Ticket Number'
+        },
+        {
+            $Type: 'UI.DataField',
+            Value: customer_guid_NODE_KEY,
+            Label: 'Customer'
+        },
+        {
+            $Type: 'UI.DataField',
+            Value: note,
+            Label: 'Note'
+        }
+    ],
+    UI.FieldGroup #PricingDetails : {
+      Data : [
+         {
+            $Type: 'UI.DataField',
+            Value: gross_amount,
+            Label: 'Gross Amount'
+        },
+        {
+            $Type: 'UI.DataField',
+            Value: net_amount,
+            Label: 'Net Amount'
+        },
+        {
+            $Type: 'UI.DataField',
+            Value: tax_amount,
+            Label: 'Tax Amount'
+        }
+      ]
+    },
+    UI.FieldGroup #StatusData : {
+        Data : [
+              {
+            $Type: 'UI.DataField',
+            Value: overall_status,
+            Label: 'Overall Status'
+        },
+        {
+            $Type: 'UI.DataField',
+            Value: priorityStatus,
+            Label: 'Priority Status'
+        },
+        ]
+    }
 
 );
 
-annotate service.ServiceTicket with {
-    @Common.Text:priorityStatus
+annotate service.ServiceTicketItem with @(
+   UI.HeaderInfo                : {
+        TypeName      : 'Service Ticket item',
+        TypeNamePlural: 'Service Tickets items',
+        ImageUrl      : 'https://cap.cloud.sap/docs/logos/cap.svg',
+        Title         : {
+            $Type: 'UI.DataField',
+            Value: item_number
+        },
+        Description   : {
+            $Type: 'UI.DataField',
+            Value: description
+        }
+    },
+
+    UI.Facets : [
+        {
+            $Type : 'UI.ReferenceFacet',
+            Target : '@UI.Identification',
+            Label : 'Item Details'
+
+        }
+    ],
+  
+     UI.Identification            : [
+        {
+            $Type: 'UI.DataField',
+            Value: spare_part.part_number,
+            Label: 'spare part number'
+        },
+        {
+            $Type: 'UI.DataField',
+            Value: parent.technician.nameFirst,
+            Label: 'technician name First'
+        },
+        {
+            $Type: 'UI.DataField',
+            Value: parent.customer_guid_NODE_KEY,
+            Label: 'Customer Guid'
+        }
+    ],
+
+UI.LineItem: [
+    {
+        $Type: 'UI.DataField',
+        Value: item_number
+    },
+    {
+        $Type: 'UI.DataField',
+        Value: description
+    },
+    {
+        $Type: 'UI.DataField',
+        Value: spare_part
+    },
+    {
+        $Type: 'UI.DataField',
+        Value: parent.ticket_number
+    },
+    {
+        $Type: 'UI.DataField',
+        Value: parent.technician
+    }
+],
+
+);
+
+annotate service.serviceTicket with {
+    @Common.Text: priorityStatus
     priority_status;
+    @Common.Text: customer_guid.customer_name
+    // @Common : { TextArrangement : #TextOnly, }
+    // @UI.Hidden
+    customer_guid;
+
+}
+
+annotate service.ServiceTicket actions{
+    updatePhoneNumberT @Common.SideEffects : {
+        TargetProperties : [ 'customer_guid.phone_number' ],
+        TargetEntities : [ customer_guid ]
+    };
 };

@@ -20,8 +20,9 @@ service crudService {
         else 'Unknown'
         end as CriticalityField:Integer
     }
+    
     actions{
-        action updatePhoneNumber() returns String;
+        action updatePhoneNumberT() returns String;
     };
     entity ServiceTicketItem as projection on operations.ServiceTicketItem;
 
